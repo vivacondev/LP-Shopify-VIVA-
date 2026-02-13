@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desarrollo Shopify | VIVA!</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   PASSWORD OVERLAY
+   ═══════════════════════════════════════════════════ */
+.password-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #080B22;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.password-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.password-box {
+  text-align: center;
+  max-width: 400px;
+  padding: 2.5rem;
+  width: 100%;
+}
+.password-box .lock-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.2rem;
+  display: block;
+}
+.password-box h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 0.5rem;
+}
+.password-box p {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem;
+  color: #8B8FA8;
+  margin-bottom: 1.8rem;
+  line-height: 1.5;
+}
+.password-input-wrap {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+.password-input-wrap input {
+  flex: 1;
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(91,107,255,0.2);
+  background: #111638;
+  color: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.password-input-wrap input::placeholder {
+  color: #8B8FA8;
+}
+.password-input-wrap input:focus {
+  border-color: #5B6BFF;
+}
+.password-input-wrap button {
+  padding: 0.8rem 1.6rem;
+  border-radius: 10px;
+  border: none;
+  background: #2D3EF2;
+  color: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.password-input-wrap button:hover {
+  background: #5B6BFF;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(45,62,242,0.35);
+}
+.password-error {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  color: #FF6B6B;
+  min-height: 1.2em;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+.password-error.show {
+  opacity: 1;
+}
+.password-box .brand {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.3rem;
+  color: #FFFFFF;
+  margin-bottom: 2rem;
+  display: block;
+}
+.password-box .brand span {
+  color: #5B6BFF;
+}
+
+/* ═══════════════════════════════════════════════════
+   ROOT & RESET
+   ═══════════════════════════════════════════════════ */
+:root {
+  --blue: #2D3EF2;
+  --blue-light: #5B6BFF;
+  --blue-bg: #0B0F2E;
+  --blue-surface: #111638;
+  --blue-card: #161B45;
+  --blue-border: rgba(91,107,255,0.12);
+  --white: #FFFFFF;
+  --off-white: #E8E9F0;
+  --gray: #8B8FA8;
+  --gray-light: #A8ACBF;
+  --dark: #080B22;
+  --shopify-green: #95BF47;
+  --accent: var(--blue);
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --serif: 'Instrument Serif', serif;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--blue-bg);
+  color: var(--off-white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body.locked { overflow: hidden; }
+img { max-width: 100%; display: block; }
+a { text-decoration: none; color: inherit; }
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; }
+
+/* ═══════════════════════════════════════════════════
+   NAV
+   ═══════════════════════════════════════════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(8,11,34,0.85);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--blue-border);
+  transition: all 0.3s;
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem; max-width: 1180px; margin: 0 auto;
+}
+.nav-logo {
+  font-family: var(--serif); font-size: 1.55rem;
+  color: var(--white); letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--blue-light); }
+.nav-links { display: flex; align-items: center; gap: 2.2rem; }
+.nav-links a {
+  font-size: 0.82rem; font-weight: 500; color: var(--gray-light);
+  transition: color 0.25s; letter-spacing: 0.01em;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-cta {
+  background: var(--blue); color: var(--white);
+  padding: 0.6rem 1.5rem; border-radius: 8px;
+  font-weight: 600; font-size: 0.8rem;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  transition: all 0.3s;
+}
+.nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(45,62,242,0.35); }
+
+.hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--white); margin: 5px 0; transition: all 0.3s; border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════════
+   BREADCRUMB
+   ═══════════════════════════════════════════════════ */
+.breadcrumb {
+  padding-top: 6rem; padding-bottom: 0;
+}
+.breadcrumb p {
+  font-size: 0.78rem; color: var(--gray);
+  letter-spacing: 0.02em;
+}
+.breadcrumb a { color: var(--blue-light); }
+.breadcrumb a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════ */
+.hero {
+  padding: 2rem 0 0;
+}
+.hero-title-block {
+  margin-bottom: 2.5rem;
+}
+.hero-title-block h1 {
+  font-family: var(--font);
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+  font-weight: 800; color: var(--white);
+  line-height: 1.05; letter-spacing: -0.03em;
+}
+
+.hero-content-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3rem;
+  align-items: start;
+  margin-bottom: 3.5rem;
+}
+
+.hero-cta-col {
+  padding-top: 0.3rem;
+}
+
+.hero-cta-top {
+  background: var(--blue); color: var(--white);
+  padding: 0.75rem 2rem; border-radius: 8px;
+  font-weight: 700; font-size: 0.75rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  transition: all 0.3s;
+  display: inline-block; white-space: nowrap;
+}
+.hero-cta-top:hover { background: var(--blue-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(45,62,242,0.3); }
+
+.hero-text-col h2 {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  color: var(--white); line-height: 1.25;
+  margin-bottom: 1rem; letter-spacing: -0.01em;
+}
+.hero-text-col p {
+  font-size: 0.95rem; line-height: 1.75; color: var(--gray-light);
+  max-width: 580px;
+}
+
+/* Full-width hero image */
+.hero-full-image {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  height: clamp(300px, 45vw, 550px);
+  overflow: hidden;
+  position: relative;
+}
+.hero-full-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.hero-full-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(to top, var(--blue-bg), transparent);
+  pointer-events: none;
+}
+.hero-full-image::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, var(--blue-bg), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION: ¿En qué podemos ayudarte?
+   ═══════════════════════════════════════════════════ */
+.section { padding: 5.5rem 0; }
+.section-alt { background: var(--dark); }
+.section-header { margin-bottom: 3rem; }
+.section-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 700; color: var(--white);
+  letter-spacing: -0.02em; line-height: 1.15;
+}
+.section-header p {
+  margin-top: 0.8rem; font-size: 0.95rem;
+  color: var(--gray-light); max-width: 560px; line-height: 1.65;
+}
+
+.features-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+.feature-card {
+  background: var(--blue-card);
+  border: 1px solid var(--blue-border);
+  border-radius: 16px; padding: 1.8rem;
+  transition: all 0.35s ease;
+}
+.feature-card:hover {
+  border-color: rgba(91,107,255,0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+.feature-icon {
+  width: 44px; height: 44px;
+  background: rgba(45,62,242,0.12);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1rem; font-size: 1.2rem;
+}
+.feature-card h3 {
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--white); margin-bottom: 0.5rem;
+}
+.feature-card p {
+  font-size: 0.84rem; color: var(--gray-light);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION: Así es nuestro servicio (2x2 + imagen)
+   ═══════════════════════════════════════════════════ */
+.services-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.services-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.services-header-block {
+  margin-bottom: 2rem;
+}
+.services-header-block h2 {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 700; color: var(--white); line-height: 1.15;
+  letter-spacing: -0.02em; margin-bottom: 0.6rem;
+}
+.services-header-block p {
+  font-size: 0.88rem; color: var(--gray); line-height: 1.6;
+}
+
+.services-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.service-block {
+  background: var(--blue-card);
+  border: 1px solid var(--blue-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.35s ease;
+}
+.service-block:hover {
+  border-color: rgba(91,107,255,0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+.service-block h3 {
+  font-size: 1rem; font-weight: 700; color: var(--white);
+  margin-bottom: 0.8rem;
+}
+.service-block ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.service-block li {
+  font-size: 0.84rem; color: var(--gray-light); line-height: 1.55;
+  padding-left: 1.1rem; position: relative;
+}
+.service-block li::before {
+  content: ''; width: 4px; height: 4px;
+  background: var(--blue-light); border-radius: 50%;
+  position: absolute; left: 0; top: 0.55rem;
+}
+
+.services-image {
+  border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--blue-border);
+  position: sticky; top: 6rem;
+  min-height: 500px;
+}
+.services-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  min-height: 500px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION: Marcas
+   ═══════════════════════════════════════════════════ */
+.brands { padding: 4rem 0; border-top: 1px solid var(--blue-border); border-bottom: 1px solid var(--blue-border); }
+.brands-inner { display: flex; align-items: center; justify-content: center; gap: 3.5rem; flex-wrap: wrap; }
+.brand-name {
+  font-family: var(--serif); font-size: 1.5rem;
+  color: var(--white); opacity: 0.25;
+  letter-spacing: -0.02em; transition: opacity 0.3s;
+}
+.brand-name:hover { opacity: 0.7; }
+
+/* ═══════════════════════════════════════════════════
+   SECTION: Quote
+   ═══════════════════════════════════════════════════ */
+.quote-section {
+  padding: 4.5rem 0;
+  background: var(--blue-surface);
+  border-bottom: 1px solid var(--blue-border);
+}
+.quote-inner {
+  display: flex; align-items: center; gap: 2rem;
+  max-width: 750px; margin: 0 auto; text-align: center;
+  flex-direction: column;
+}
+.quote-text {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.5rem; color: var(--white);
+  line-height: 1.4;
+}
+.quote-text::before { content: '«'; color: var(--blue-light); }
+.quote-text::after { content: '»'; color: var(--blue-light); }
+.quote-author { font-size: 0.85rem; color: var(--gray); }
+.quote-author strong { color: var(--off-white); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════
+   SECTION: Process
+   ═══════════════════════════════════════════════════ */
+.process-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+.process-step { position: relative; }
+.process-num {
+  font-family: var(--serif);
+  font-size: 3.5rem; color: rgba(91,107,255,0.12);
+  line-height: 1; margin-bottom: 0.6rem;
+}
+.process-step h3 {
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--white); margin-bottom: 0.5rem;
+}
+.process-step p {
+  font-size: 0.84rem; color: var(--gray-light); line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION: Casos de éxito
+   ═══════════════════════════════════════════════════ */
+.cases-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.case-card {
+  background: var(--blue-card);
+  border: 1px solid var(--blue-border);
+  border-radius: 16px; overflow: hidden;
+  transition: all 0.35s;
+}
+.case-card:hover {
+  transform: translateY(-5px); border-color: rgba(91,107,255,0.3);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.3);
+}
+.case-header {
+  height: 180px;
+  background: linear-gradient(135deg, rgba(45,62,242,0.15), rgba(22,27,69,0.9));
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.case-header::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 60px; background: linear-gradient(to top, var(--blue-card), transparent);
+}
+.case-brand {
+  font-family: var(--serif); font-size: 2rem;
+  color: var(--white); opacity: 0.7; position: relative; z-index: 1;
+}
+.case-body { padding: 1.5rem; }
+.case-tag {
+  display: inline-block; font-size: 0.65rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--blue-light); background: rgba(45,62,242,0.12);
+  padding: 0.25rem 0.7rem; border-radius: 6px;
+  font-weight: 600; margin-bottom: 0.7rem;
+}
+.case-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+.case-card > .case-body > p { font-size: 0.82rem; color: var(--gray-light); line-height: 1.6; margin-bottom: 1rem; }
+.case-metrics { display: flex; gap: 1.5rem; }
+.case-metric strong {
+  font-family: var(--serif); font-size: 1.3rem;
+  color: var(--blue-light); display: block;
+}
+.case-metric span { font-size: 0.65rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ═══════════════════════════════════════════════════
+   SECTION: Herramientas
+   ═══════════════════════════════════════════════════ */
+.tools-row {
+  display: flex; justify-content: center; align-items: center;
+  gap: 1.5rem; flex-wrap: wrap;
+}
+.tool-chip {
+  background: var(--blue-card);
+  border: 1px solid var(--blue-border);
+  border-radius: 12px; padding: 0.8rem 1.5rem;
+  font-size: 0.85rem; font-weight: 600; color: var(--off-white);
+  display: flex; align-items: center; gap: 0.5rem;
+  transition: all 0.3s;
+}
+.tool-chip:hover { border-color: rgba(91,107,255,0.3); transform: translateY(-2px); }
+.tool-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--shopify-green); }
+
+/* ═══════════════════════════════════════════════════
+   CTA Banner
+   ═══════════════════════════════════════════════════ */
+.cta-banner {
+  background: var(--blue);
+  padding: 4rem 2rem;
+  border-radius: 20px;
+  margin: 0 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.cta-banner::before {
+  content: ''; position: absolute; top: -40%; right: -10%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 60%);
+}
+.cta-banner-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1100px; margin: 0 auto; position: relative; z-index: 1;
+}
+.cta-banner-inner h2 {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 700; color: var(--white);
+  line-height: 1.2;
+}
+.cta-banner-inner .cta-label {
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: rgba(255,255,255,0.6);
+  font-weight: 600; margin-bottom: 0.3rem;
+}
+.cta-arrow {
+  width: 56px; height: 56px;
+  background: var(--white); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; color: var(--blue);
+  transition: all 0.3s; flex-shrink: 0;
+}
+.cta-arrow:hover { transform: scale(1.1) translateX(4px); }
+
+/* ═══════════════════════════════════════════════════
+   FAQ
+   ═══════════════════════════════════════════════════ */
+.faq-layout {
+  display: grid; grid-template-columns: 1fr 0.85fr;
+  gap: 3.5rem; align-items: start;
+}
+.faq-list { display: flex; flex-direction: column; }
+.faq-item { border-bottom: 1px solid var(--blue-border); }
+.faq-q {
+  width: 100%; background: none; border: none;
+  padding: 1.3rem 0; display: flex; justify-content: space-between;
+  align-items: center; cursor: pointer;
+  font-family: var(--font); font-size: 0.95rem;
+  color: var(--white); font-weight: 600;
+  text-align: left; transition: color 0.25s;
+  gap: 1rem;
+}
+.faq-q:hover { color: var(--blue-light); }
+.faq-toggle-icon {
+  width: 26px; height: 26px; border-radius: 8px;
+  border: 1px solid var(--blue-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: var(--gray); flex-shrink: 0;
+  transition: all 0.3s;
+}
+.faq-item.open .faq-toggle-icon {
+  background: var(--blue); border-color: var(--blue);
+  color: var(--white); transform: rotate(45deg);
+}
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.faq-a-inner { padding: 0 0 1.3rem; font-size: 0.86rem; color: var(--gray-light); line-height: 1.7; }
+
+.faq-side {
+  position: sticky; top: 6rem;
+  border-radius: 20px; overflow: hidden;
+  background: var(--blue-card);
+  border: 1px solid var(--blue-border);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 400px;
+}
+.faq-side-content { text-align: center; padding: 2.5rem; }
+.faq-side-content .icon-big { font-size: 3rem; margin-bottom: 1rem; }
+.faq-side-content h3 {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.4rem; color: var(--white);
+  margin-bottom: 0.6rem;
+}
+.faq-side-content p { font-size: 0.85rem; color: var(--gray); line-height: 1.6; }
+
+/* ═══════════════════════════════════════════════════
+   Blog
+   ═══════════════════════════════════════════════════ */
+.blog-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.blog-link {
+  font-size: 0.78rem; font-weight: 700; color: var(--blue-light);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  transition: color 0.25s; display: flex; align-items: center; gap: 0.4rem;
+}
+.blog-link:hover { color: var(--white); }
+.blog-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.blog-card {
+  background: var(--blue-card);
+  border: 1px solid var(--blue-border);
+  border-radius: 16px; overflow: hidden;
+  transition: all 0.35s;
+}
+.blog-card:hover { transform: translateY(-4px); border-color: rgba(91,107,255,0.3); }
+.blog-thumb {
+  height: 160px;
+  background: linear-gradient(135deg, rgba(45,62,242,0.12), var(--blue-card));
+  display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+}
+.blog-card-body { padding: 1.3rem; }
+.blog-card-tag {
+  font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--blue-light);
+  font-weight: 600; margin-bottom: 0.5rem; display: inline-block;
+}
+.blog-card h3 { font-size: 0.9rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; line-height: 1.35; }
+.blog-card .read-more {
+  font-size: 0.78rem; color: var(--blue-light);
+  font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;
+  margin-top: 0.6rem; transition: color 0.25s;
+}
+.blog-card .read-more:hover { color: var(--white); }
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════ */
+.footer {
+  background: var(--dark); padding: 3.5rem 0 2rem;
+  border-top: 1px solid var(--blue-border);
+}
+.footer-inner {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-logo { font-family: var(--serif); font-size: 1.4rem; color: var(--white); }
+.footer-logo span { color: var(--blue-light); }
+.footer-links { display: flex; gap: 1.5rem; }
+.footer-links a { font-size: 0.78rem; color: var(--gray); transition: color 0.25s; }
+.footer-links a:hover { color: var(--white); }
+.footer-copy { width: 100%; text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--blue-border); font-size: 0.72rem; color: var(--gray); }
+
+/* ═══════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+.anim { opacity: 0; transform: translateY(28px); transition: all 0.65s cubic-bezier(0.22, 1, 0.36, 1); }
+.anim.show { opacity: 1; transform: translateY(0); }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .services-layout { grid-template-columns: 1fr; }
+  .services-image { position: relative; top: 0; min-height: 300px; }
+  .services-image img { min-height: 300px; }
+  .services-cards-grid { grid-template-columns: 1fr 1fr; }
+  .process-grid { grid-template-columns: repeat(2, 1fr); }
+  .cases-grid { grid-template-columns: repeat(2, 1fr); }
+  .faq-layout { grid-template-columns: 1fr; }
+  .faq-side { display: none; }
+  .blog-grid { grid-template-columns: repeat(2, 1fr); }
+  .cta-banner { margin: 0 1rem; }
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+}
+@media (max-width: 768px) {
+  .hero-content-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .features-grid { grid-template-columns: 1fr; }
+  .services-cards-grid { grid-template-columns: 1fr; }
+  .process-grid { grid-template-columns: 1fr; }
+  .cases-grid { grid-template-columns: 1fr; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .cta-banner-inner { flex-direction: column; text-align: center; gap: 1.5rem; }
+  .container { padding: 0 1.25rem; }
+  .brands-inner { gap: 2rem; }
+  .hero-full-image { height: clamp(220px, 50vw, 350px); }
+}
+</style>
+</head>
+<body class="locked">
+
+<!-- ═══════════ PASSWORD OVERLAY ═══════════ -->
+<div class="password-overlay" id="passwordOverlay">
+  <div class="password-box">
+    <span class="brand">VIVA!<span>.</span></span>
+    <span class="lock-icon">🔒</span>
+    <h2>Contenido protegido</h2>
+    <p>Introduce la contraseña para acceder al contenido de esta página.</p>
+    <div class="password-input-wrap">
+      <input type="password" id="passwordInput" placeholder="Contraseña" autocomplete="off">
+      <button id="passwordSubmit">Entrar</button>
+    </div>
+    <p class="password-error" id="passwordError">Contraseña incorrecta. Inténtalo de nuevo.</p>
+  </div>
+</div>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="https://kansei.pro" class="nav-logo"> VIVA!<span>.</span></a>
+    <div class="nav-links">
+      <a href="#servicios">Desarrollo Shopify</a>
+      <a href="#proceso">Cómo trabajamos</a>
+      <a href="#casos">Casos de éxito</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://kansei.pro/blogs/shopify">Blog</a>
+    </div>
+    <a href="https://kansei.pro/pages/contact" class="nav-cta">¡Comienza ahora!</a>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ BREADCRUMB ═══════════ -->
+<div class="breadcrumb container">
+  <p><a href="https://kansei.pro">Kansei</a> › Desarrollo Shopify</p>
+</div>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-title-block anim">
+      <h1>Desarrollo Shopify</h1>
+    </div>
+    <div class="hero-content-row anim">
+      <div class="hero-cta-col">
+        <a href="https://kansei.pro/pages/contact" class="hero-cta-top">Contacta con nosotros</a>
+      </div>
+      <div class="hero-text-col">
+        <h2>Creamos tiendas Shopify que hacen tu negocio más rentable.</h2>
+        <p>No solo creamos tu tienda en Shopify, sino que la hacemos crecer contigo. Tu éxito es nuestra meta y te acompañamos en cada paso con soluciones que integran tecnología, marketing y negocio.</p>
+      </div>
+    </div>
+  </div>
+  <div class="hero-full-image anim">
+    <img src="https://vivaconversion.com/wp-content/uploads/2025/08/18.Oficina_azul-scaled.jpg" alt="Espacio de trabajo de desarrollo Shopify">
+  </div>
+</section>
+
+<!-- ═══════════ ¿EN QUÉ PODEMOS AYUDARTE? ═══════════ -->
+<section class="section section-alt" id="ayuda">
+  <div class="container">
+    <div class="section-header anim">
+      <h2>¿En qué podemos ayudarte?</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card anim">
+        <div class="feature-icon">🔄</div>
+        <h3>Migración a Shopify</h3>
+        <p>Migramos tu tienda desde Magento, Prestashop, WooCommerce o cualquier CMS. Todos tus datos se transfieren sin problema y tu SEO no sufre.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">🎨</div>
+        <h3>Temas personalizados</h3>
+        <p>Modificamos y adaptamos temas Shopify para satisfacer los requerimientos de tu marca, creando funcionalidades y secciones nuevas reutilizables.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">🛠️</div>
+        <h3>Mantenimiento y soporte</h3>
+        <p>Soporte técnico continuo para solucionar problemas, realizar actualizaciones e implementar mejoras continuas en tu tienda.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">💡</div>
+        <h3>Consultoría eCommerce</h3>
+        <p>Asesoría de apps y funcionalidades en tu Shopify. Te guiamos en la elección y configuración óptima de cada herramienta.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">⚡</div>
+        <h3>Automatizaciones Make/n8n</h3>
+        <p>Flujos automatizados para optimizar operaciones, reducir trabajo manual y conectar Shopify con todas tus herramientas.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">🌍</div>
+        <h3>Internacionalización</h3>
+        <p>Configuramos tu tienda para vender en múltiples países con traducción de contenido, múltiples monedas y envío internacional.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">🚀</div>
+        <h3>Optimización de rendimiento</h3>
+        <p>Mejoramos la velocidad y eficiencia de tu tienda para una experiencia de usuario óptima y mayor conversión.</p>
+      </div>
+      <div class="feature-card anim">
+        <div class="feature-icon">🔗</div>
+        <h3>Automatización y conexión con terceros</h3>
+        <p>Desarrollo apps privadas que integran tu tienda con plataformas de terceros, como ERP, CRMs, sistemas de envío, sucursales, almacenes o cualquier otro servicio que tu negocio necesite.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ASÍ ES NUESTRO SERVICIO ═══════════ -->
+<section class="section" id="servicios">
+  <div class="container">
+    <div class="services-header-block anim">
+      <h2>Así es nuestro servicio</h2>
+      <p>Soluciones Shopify integrales adaptadas a cada fase de tu proyecto eCommerce.</p>
+    </div>
+    <div class="services-layout">
+      <div class="services-left">
+        <div class="services-cards-grid">
+          <div class="service-block anim">
+            <h3>Migración a Shopify</h3>
+            <ul>
+              <li>Migraciones desde Magento, Prestashop, WooCommerce, desarrollos custom o cualquier otra plataforma</li>
+              <li>Transferencia completa de catálogos, clientes, pedidos e históricos</li>
+              <li>Preservación del posicionamiento SEO con redirects 301</li>
+              <li>Testing exhaustivo y puesta en marcha sin interrupciones</li>
+            </ul>
+          </div>
+          <div class="service-block anim">
+            <h3>Desarrollo y personalización</h3>
+            <ul>
+              <li>Creación de tiendas Shopify desde cero con configuración inicial completa</li>
+              <li>Personalización de temas adaptados a la identidad de tu marca</li>
+              <li>Desarrollo a medida de funcionalidades y secciones reutilizables</li>
+              <li>Carga masiva de productos y configuración avanzada del catálogo</li>
+            </ul>
+          </div>
+          <div class="service-block anim">
+            <h3>Soporte e integraciones</h3>
+            <ul>
+              <li>Resolución de incidencias y soporte técnico continuo</li>
+              <li>Integraciones con CRM, ERP, sistemas de inventario y marketplaces</li>
+              <li>Actualización de temas y apps de Shopify</li>
+              <li>Dashboards y analítica para monitoreo de KPIs</li>
+            </ul>
+          </div>
+          <div class="service-block anim">
+            <h3>Consultoría y automatización</h3>
+            <ul>
+              <li>Asesoría estratégica de apps y funcionalidades Shopify</li>
+              <li>Auditorías de rendimiento, UX, conversión y SEO</li>
+              <li>Automatizaciones con Make y n8n para flujos operativos</li>
+              <li>Landing pages optimizadas para campañas y lanzamientos</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="services-image anim">
+        <img src="https://vivaconversion.com/wp-content/uploads/2025/09/09.-Estrecho%E2%95%A0un-manos_azul.jpg" alt="Nuestro servicio Shopify">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ MARCAS ═══════════ -->
+<div class="brands">
+  <div class="container">
+    <p style="text-align:center; font-size:0.92rem; font-weight:600; color:var(--white); margin-bottom:1.8rem;" class="anim">Marcas con las que trabajamos</p>
+    <div class="brands-inner anim">
+      <span class="brand-name">Marmota</span>
+      <span class="brand-name">226ers</span>
+      <span class="brand-name">Satorisan</span>
+      <span class="brand-name">Unimart</span>
+      <span class="brand-name">Tiendas Montó</span>
+      <span class="brand-name">Plata de Palo</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ QUOTE ═══════════ -->
+<section class="quote-section">
+  <div class="container">
+    <div class="quote-inner anim">
+      <p class="quote-text">No solo creamos tu tienda en Shopify, sino que la hacemos crecer contigo. Tu éxito es nuestra meta.</p>
+      <p class="quote-author"><strong>Equipo VIVA!</strong> · Agencia Shopify by VIVA! Conversion</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PROCESO ═══════════ -->
+<section class="section section-alt" id="proceso">
+  <div class="container">
+    <div class="section-header anim">
+      <h2>¿Cómo trabajaremos en tu proyecto?</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-step anim">
+        <div class="process-num">01</div>
+        <h3>Análisis y auditoría</h3>
+        <p>No solo analizamos tus necesidades técnicas, sino que pensamos en tus objetivos de negocio. Realizamos una auditoría completa de tu tienda actual.</p>
+      </div>
+      <div class="process-step anim">
+        <div class="process-num">02</div>
+        <h3>Backlog y priorización</h3>
+        <p>Creamos un listado de tareas y requisitos del proyecto, priorizando según su impacto y valor. Te asesoramos en la elección de las apps adecuadas.</p>
+      </div>
+      <div class="process-step anim">
+        <div class="process-num">03</div>
+        <h3>Sprints de desarrollo</h3>
+        <p>Organizamos el trabajo en sprints ágiles, periodos cortos y concentrados. Cada sprint culmina con una revisión y ajustes necesarios.</p>
+      </div>
+      <div class="process-step anim">
+        <div class="process-num">04</div>
+        <h3>Mejora continua</h3>
+        <p>Actualizaciones de temas, apps, nuevas funcionalidades y soporte técnico continuo. Tu Shopify siempre a su máximo potencial.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CASOS DE ÉXITO ═══════════ -->
+<section class="section" id="casos">
+  <div class="container">
+    <div class="section-header anim">
+      <h2>Casos de éxito</h2>
+      <p>Algunos de los proyectos donde hemos ayudado a marcas a crecer con Shopify.</p>
+    </div>
+    <div class="cases-grid">
+      <div class="case-card anim">
+        <div class="case-header" style="background: linear-gradient(135deg, rgba(149,191,71,0.12), rgba(22,27,69,0.95));">
+          <span class="case-brand">Marmota</span>
+        </div>
+        <div class="case-body">
+          <span class="case-tag">Migración + Desarrollo</span>
+          <h3>Migración completa a Shopify</h3>
+          <p>Migración del eCommerce a Shopify con transferencia completa de datos, personalización de tema y optimización de la experiencia de compra.</p>
+          <div class="case-metrics">
+            <div class="case-metric"><strong>+40%</strong><span>Velocidad web</span></div>
+            <div class="case-metric"><strong>0%</strong><span>Pérdida SEO</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="case-card anim">
+        <div class="case-header" style="background: linear-gradient(135deg, rgba(91,107,255,0.12), rgba(22,27,69,0.95));">
+          <span class="case-brand">Satorisan</span>
+        </div>
+        <div class="case-body">
+          <span class="case-tag">Personalización + Internacionalización</span>
+          <h3>Tema a medida para 15+ mercados</h3>
+          <p>Desarrollo de tema personalizado con secciones reutilizables, integración ERP y configuración multilingüe para expansión internacional.</p>
+          <div class="case-metrics">
+            <div class="case-metric"><strong>15+</strong><span>Mercados</span></div>
+            <div class="case-metric"><strong>+25%</strong><span>Tráfico orgánico</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="case-card anim">
+        <div class="case-header" style="background: linear-gradient(135deg, rgba(45,62,242,0.18), rgba(22,27,69,0.95));">
+          <span class="case-brand">Plata de Palo</span>
+        </div>
+        <div class="case-body">
+          <span class="case-tag">Desarrollo + Automatización</span>
+          <h3>Shopify optimizado con automatizaciones</h3>
+          <p>Creación de tienda Shopify con funcionalidades a medida, automatizaciones con Make y optimización de la tasa de conversión.</p>
+          <div class="case-metrics">
+            <div class="case-metric"><strong>+30%</strong><span>Conversión</span></div>
+            <div class="case-metric"><strong>−50%</strong><span>Trabajo manual</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ HERRAMIENTAS ═══════════ -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header anim" style="text-align:center; margin-bottom:2rem;">
+      <h2>Conoce las herramientas con las que trabajamos</h2>
+    </div>
+    <div class="tools-row anim">
+      <div class="tool-chip"><span class="dot"></span> Shopify & Shopify Plus</div>
+      <div class="tool-chip"><span class="dot" style="background:var(--blue-light)"></span> Liquid & Hydrogen</div>
+      <div class="tool-chip"><span class="dot" style="background:#E87040"></span> Make (Integromat)</div>
+      <div class="tool-chip"><span class="dot" style="background:#FF6D5A"></span> n8n</div>
+      <div class="tool-chip"><span class="dot" style="background:#F4B400"></span> GA4 & GTM</div>
+      <div class="tool-chip"><span class="dot" style="background:#7B68EE"></span> APIs & Webhooks</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA BANNER ═══════════ -->
+<section class="section" style="padding-bottom: 5.5rem;">
+  <div class="cta-banner anim">
+    <div class="cta-banner-inner">
+      <div>
+        <p class="cta-label">Método VIVA!</p>
+        <h2>Tu crecimiento es el nuestro. ¡A por ello!</h2>
+      </div>
+      <a href="https://kansei.pro/pages/contact" class="cta-arrow" aria-label="Contactar">→</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FAQ ═══════════ -->
+<section class="section section-alt" id="faq">
+  <div class="container">
+    <div class="section-header anim">
+      <h2>Preguntas frecuentes</h2>
+    </div>
+    <div class="faq-layout">
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q">¿Qué metodología seguís en el departamento de Tech? <span class="faq-toggle-icon">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Utilizamos la <strong>metodología Agile mediante sprints</strong>, definidos de manera conjunta con nuestro cliente. Cada sprint culmina con una revisión y ajustes necesarios, asegurando que todo funcione según lo planeado.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">¿Cómo se estructuran vuestros equipos? <span class="faq-toggle-icon">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Tenemos <strong>equipos multidisciplinares, dirigidos por un Project Manager</strong>, que establecerá las necesidades de cada proyecto y gestionará al equipo participante: líderes técnicos, desarrolladores y diseñadores.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">¿Cómo es la comunicación con vuestro equipo? <span class="faq-toggle-icon">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Para nosotros <strong>la comunicación con los clientes es lo más importante</strong>. Ponemos a disposición varios canales: Slack, videoconferencias por Google Meet, email y teléfono. Si tu empresa tiene otro modo de comunicación, nos adaptamos sin problemas.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">¿Qué modelos de precios existen? <span class="faq-toggle-icon">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Nuestros <strong>modelos de precios son completamente adaptados a cada cliente</strong> dependiendo de la complejidad del proyecto, servicios incluidos y responsabilidad de nuestro trabajo. Pueden variar según plataformas, países y líneas de producto. Tenemos modelos de fees fijos revisables cada 3 meses.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">¿Puedo migrar mi tienda desde cualquier CMS? <span class="faq-toggle-icon">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Sí. Realizamos migraciones desde <strong>Magento, Prestashop, WooCommerce, desarrollos a medida</strong> o cualquier otra plataforma. Nos aseguramos de que todos tus datos (catálogos, clientes, pedidos) se transfieran sin problema y que tu posicionamiento SEO no se vea afectado.</div></div>
+        </div>
+      </div>
+      <div class="faq-side anim">
+        <div class="faq-side-content">
+          <div class="icon-big">🛍️</div>
+          <h3>Shopify Partners Oficiales</h3>
+          <p>Somos agencia Shopify Partner con experiencia en desarrollo, migración, SEO y optimización de tiendas online.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ BLOG ═══════════ -->
+<section class="section" id="blog">
+  <div class="container">
+    <div class="blog-header anim">
+      <h2 style="font-size:clamp(1.5rem,3vw,2.1rem); font-weight:700; color:var(--white);">Contenidos Shopify de nuestro Blog</h2>
+      <a href="https://kansei.pro/blogs/shopify" class="blog-link">Visita el blog ↗</a>
+    </div>
+    <div class="blog-grid">
+      <a href="https://kansei.pro/blogs/shopify/shopify-vs-prestashop" class="blog-card anim">
+        <div class="blog-thumb">🆚</div>
+        <div class="blog-card-body">
+          <span class="blog-card-tag">Shopify</span>
+          <h3>Shopify vs Prestashop: ¿Cuál elegir?</h3>
+          <span class="read-more">Leer más ↗</span>
+        </div>
+      </a>
+      <a href="https://kansei.pro/blogs/shopify/shopify-que-es-y-como-funciona" class="blog-card anim">
+        <div class="blog-thumb">📖</div>
+        <div class="blog-card-body">
+          <span class="blog-card-tag">Shopify</span>
+          <h3>Shopify: qué es y cómo funciona</h3>
+          <span class="read-more">Leer más ↗</span>
+        </div>
+      </a>
+      <a href="https://kansei.pro/blogs/shopify/shopify-metricas-rendimiento-web" class="blog-card anim">
+        <div class="blog-thumb">📊</div>
+        <div class="blog-card-body">
+          <span class="blog-card-tag">Desarrollo Web</span>
+          <h3>Shopify: métricas de rendimiento web</h3>
+          <span class="read-more">Leer más ↗</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <a href="https://kansei.pro" class="footer-logo">Kansei<span>.</span></a>
+      <div class="footer-links">
+        <a href="https://kansei.pro/pages/desarrollo-shopify">Desarrollo Shopify</a>
+        <a href="https://kansei.pro/pages/mantenimiento-shopify">Mantenimiento</a>
+        <a href="https://kansei.pro/pages/agencia-seo-shopify">SEO Shopify</a>
+        <a href="https://kansei.pro/pages/contact">Contacto</a>
+      </div>
+    </div>
+    <p class="footer-copy">© 2026 VIVA — Agencia Shopify by VIVA! Conversion · Create emotions. Build connections.</p>
+  </div>
+</footer>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+// ═══════════ PASSWORD PROTECTION ═══════════
+(function() {
+  const PASSWORD = 'VIVA2026LP';
+  const overlay = document.getElementById('passwordOverlay');
+  const input = document.getElementById('passwordInput');
+  const submit = document.getElementById('passwordSubmit');
+  const error = document.getElementById('passwordError');
+
+  function checkPassword() {
+    if (input.value === PASSWORD) {
+      overlay.classList.add('hidden');
+      document.body.classList.remove('locked');
+      sessionStorage.setItem('viva_auth', 'true');
+    } else {
+      error.classList.add('show');
+      input.value = '';
+      input.focus();
+      setTimeout(() => error.classList.remove('show'), 2500);
+    }
+  }
+
+  // Check if already authenticated this session
+  if (sessionStorage.getItem('viva_auth') === 'true') {
+    overlay.classList.add('hidden');
+    document.body.classList.remove('locked');
+  } else {
+    input.focus();
+  }
+
+  submit.addEventListener('click', checkPassword);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') checkPassword();
+  });
+})();
+
+// Scroll reveal
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.anim').forEach(el => io.observe(el));
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const answer = item.querySelector('.faq-a');
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('.faq-a').style.maxHeight = null;
+    });
+    if (!wasOpen) {
+      item.classList.add('open');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+    }
+  });
+});
+
+// Mobile menu toggle
+document.querySelector('.hamburger').addEventListener('click', function() {
+  const links = document.querySelector('.nav-links');
+  if (links.style.display === 'flex') {
+    links.style.display = 'none';
+  } else {
+    links.style.display = 'flex';
+    links.style.flexDirection = 'column';
+    links.style.position = 'absolute';
+    links.style.top = '100%';
+    links.style.left = '0';
+    links.style.right = '0';
+    links.style.background = 'rgba(8,11,34,0.97)';
+    links.style.padding = '1.5rem 2rem';
+    links.style.borderBottom = '1px solid var(--blue-border)';
+    links.style.gap = '1.2rem';
+  }
+});
+</script>
+
+</body>
+</html>
